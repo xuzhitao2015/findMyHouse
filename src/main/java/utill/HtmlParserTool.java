@@ -1,5 +1,6 @@
 package utill;
 
+import model.Hourse;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -9,7 +10,13 @@ import org.htmlparser.tags.*;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.htmlparser.util.SimpleNodeIterator;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.PasswordAuthentication;
 import java.util.*;
 
@@ -104,7 +111,6 @@ public class HtmlParserTool {
         }catch (ParserException e){
             e.printStackTrace();
         }
-        System.out.println(links.size());
         return links;
     }
 
@@ -132,12 +138,62 @@ public class HtmlParserTool {
         }
         return nextPage;
     }
+    public static Hourse getDetailInfo(String url){
+        Hourse hourse = new Hourse();
+        try {
+            Document doc = Jsoup.connect(url).get();
+            //房屋地址
+            hourse.setUrl(url);
+            //获取标题
+            String title = doc.select("h1.main-title.font-heiti").first().text();
+            hourse.setTitle(title);
+            //获取最后修改日期
+            String modifyDate = doc.select("span.pl10").first().text().substring(5);
+            hourse.setModifyDate(modifyDate);
+            //获取图片列表
+            Iterator<Element> imgIterator = doc.select("ul#leftImg img").iterator();
+            List<String> imgList = new ArrayList<String>();
+            while (imgIterator.hasNext()){
+                Element element = imgIterator.next();
+                imgList.add(element.attr("lazy_src").toString());
+            }
+            hourse.setImgList(imgList);
+            //获取价格
+            try {
+                BigDecimal price = new BigDecimal(doc.select("em.house-price").first().text());
+                hourse.setPrice(price);
+            }catch (NumberFormatException e){
+                hourse.setPrice(BigDecimal.ZERO);
+            }
 
+            //获取房屋类型
+            String type = doc.select("div.fl.house-type.c70").first().text();
+            hourse.setHourseType(type);
+            //获取房屋小区
+            List<String> area = Arrays.asList(doc.select("div.fl.xiaoqu.c70").first().text().replaceAll("\\s","").split("-"));
+            hourse.setArea(area);
+            //获取小区详细地址
+            /*Elements addrEle = doc.select("span.fl.pr20.c2e:contains('地址')");*/
+            String address = "";
+            hourse.setAddress(address);
+            //获取房屋配置
+            String config= doc.select("li.house-primary-content-li.clearfix.person-config").first().text();
+            List<String> configs = config.equals("")?new ArrayList<String>():Arrays.asList(config.substring(3).split("-"));
+            hourse.setConfig(configs);
+            //房屋详细信息
+            StringBuffer description = new StringBuffer();
+            description.append(doc.select("div.description-content > p").text());
+            hourse.setDescription(description.toString());
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return hourse;
+    }
     /**
      * 获取房屋详情页的信息
      * @param url
      */
-    public static void getDetailInfo(String url){
+   /* public static void getDetailInfo(String url){
         try {
             Parser parser = new Parser(url);
             parser.setEncoding("utf-8");
@@ -235,5 +291,5 @@ public class HtmlParserTool {
         }catch (ParserException e){
             e.printStackTrace();
         }
-    }
+    }*/
 }

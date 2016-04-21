@@ -4,7 +4,7 @@ import org.jsoup.select.Elements;
 import org.junit.Test;
 
 /**
- * Created by Administrator on 2016/4/20.
+ * Created by zhangll on 2016/4/20.
  */
 public class JsoupTest {
     @Test
@@ -17,6 +17,5 @@ public class JsoupTest {
         Elements div = doc1.select("div > em");
         System.out.println(em.first().text());
         System.out.println(div.text());
-
     }
 }

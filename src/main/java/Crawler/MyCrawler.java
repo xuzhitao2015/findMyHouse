@@ -1,5 +1,7 @@
 package Crawler;
 
+import com.google.gson.Gson;
+import model.Hourse;
 import utill.DownloadFile;
 import utill.HtmlParserTool;
 import utill.LinkFilter;
@@ -41,12 +43,12 @@ public class MyCrawler {
 
         //初始化队列,一次先获取20页的地址
         initCrawlerWithSeeds(seads);
-        for (int i=0;i<2;i++){
+        for (int i=0;i<10;i++){
             String nextPage = HtmlParserTool.getNextPageURL(seads);
             initCrawlerWithSeeds(nextPage);
             seads = nextPage;
         }
-
+        Gson gson = new Gson();
         //待抓取的链接不空且抓取连接数<=100
         while (!LinkQueue.unVisitedUrlEmpty()){
             //对头url出队
@@ -55,7 +57,8 @@ public class MyCrawler {
             Set<String> detailUrls = HtmlParserTool.extractDetailLinks(visitUrl);
             for (Iterator<String> iterator = detailUrls.iterator(); iterator.hasNext();){
                 String detailUrl = iterator.next();
-                HtmlParserTool.getDetailInfo(detailUrl);
+                Hourse hourse = HtmlParserTool.getDetailInfo(detailUrl);
+                System.out.println(gson.toJson(hourse));
             }
             //将改url放入已处理的集合中
             LinkQueue.addVisitedUrl(visitUrl);
